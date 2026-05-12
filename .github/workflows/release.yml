@@ -13,6 +13,8 @@ jobs:
   Version:
     outputs:
       created: ${{ env.DAILY_VERSION_CREATED }}
+    permissions:
+      contents: write
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v6
@@ -30,7 +32,7 @@ jobs:
         run: npx dot-json@1 "$DIRECTORY/manifest.json" version "$DAILY_VERSION"
       - name: Ready for "submit" jobs
         if: env.DAILY_VERSION_CREATED
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           path: ${{ env.DIRECTORY }}
       - name: Create release
@@ -41,7 +43,7 @@ jobs:
         run: |
           FILENAME="$PROJECT_NAME-$DAILY_VERSION-for-local-testing-only.zip"
           zip -r "$FILENAME" ./*
-          gh release create "$DAILY_VERSION" --generate-notes "$FILENAME" --draft
+          gh release create "$DAILY_VERSION" --generate-notes "$FILENAME"
   Chrome:
     if: needs.Version.outputs.created
     needs: Version
@@ -49,8 +51,8 @@ jobs:
     environment: Chrome
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/download-artifact@v4
-      - run: npx chrome-webstore-upload-cli@next
+      - uses: actions/download-artifact@v8
+      - run: npx chrome-webstore-upload-cli@4
         working-directory: artifact
         env:
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
