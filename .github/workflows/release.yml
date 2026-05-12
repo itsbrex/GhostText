@@ -41,7 +41,7 @@ jobs:
         run: |
           FILENAME="$PROJECT_NAME-$DAILY_VERSION-for-local-testing-only.zip"
           zip -r "$FILENAME" ./*
-          gh release create "$DAILY_VERSION" --generate-notes "$FILENAME"
+          gh release create "$DAILY_VERSION" --generate-notes "$FILENAME" --draft
   Chrome:
     if: needs.Version.outputs.created
     needs: Version
@@ -50,13 +50,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/download-artifact@v4
-      - run: npx chrome-webstore-upload-cli@4.0.0-1
+      - run: npx chrome-webstore-upload-cli@next
         working-directory: artifact
         env:
           EXTENSION_ID: ${{ secrets.EXTENSION_ID }}
           CLIENT_ID: ${{ secrets.CLIENT_ID }}
           CLIENT_SECRET: ${{ secrets.CLIENT_SECRET }}
           REFRESH_TOKEN: ${{ secrets.REFRESH_TOKEN }}
+          PUBLISHER_ID: ${{ secrets.PUBLISHER_ID }}
   Firefox:
     if: needs.Version.outputs.created
     needs: Version
